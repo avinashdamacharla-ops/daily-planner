@@ -1,0 +1,110 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta name="theme-color" content="#6757e8">
+<title>Daylight — Daily Planner</title>
+<style>
+:root{--bg:#f5f6fc;--card:#fff;--ink:#202238;--muted:#777b91;--accent:#6757e8;--line:#ececf4;--green:#159b75;--shadow:0 12px 34px #29305b12}
+*{box-sizing:border-box}body{margin:0;background:var(--bg);color:var(--ink);font:15px/1.5 Inter,ui-sans-serif,system-ui,-apple-system,Segoe UI,sans-serif}
+button,input,select,textarea{font:inherit}button{cursor:pointer;border:0}
+.app{max-width:1120px;margin:auto;padding:30px 22px 60px}
+header{display:flex;justify-content:space-between;align-items:center;gap:16px;margin-bottom:28px}
+.brand{display:flex;align-items:center;gap:12px;font-weight:800;font-size:22px;letter-spacing:-.7px}
+.logo{width:42px;height:42px;border-radius:14px;background:var(--accent);color:white;display:grid;place-items:center;font-size:22px}
+.date{color:var(--muted);font-size:13px}.top-actions{display:flex;gap:9px}
+.btn{padding:11px 16px;border-radius:12px;background:#eeecff;color:var(--accent);font-weight:700}
+.btn.primary{background:var(--accent);color:#fff;box-shadow:0 6px 14px #6757e833}
+.greeting{margin:22px 0 20px}.greeting h1{font-size:clamp(27px,4vw,38px);line-height:1.15;margin:0 0 7px;letter-spacing:-1.3px}.greeting p{color:var(--muted);margin:0}
+.stats{display:grid;grid-template-columns:repeat(3,1fr);gap:14px;margin:24px 0}
+.stat,.panel{background:var(--card);border:1px solid var(--line);border-radius:18px;box-shadow:var(--shadow)}
+.stat{padding:17px 19px}.stat span{display:block;color:var(--muted);font-size:13px}.stat strong{font-size:27px;letter-spacing:-1px}
+.layout{display:grid;grid-template-columns:minmax(0,1.55fr) minmax(260px,.8fr);gap:18px;align-items:start}
+.panel{padding:20px}.panel-head{display:flex;justify-content:space-between;align-items:center;gap:10px;margin-bottom:16px}
+.panel h2{font-size:18px;margin:0;letter-spacing:-.4px}.muted{color:var(--muted);font-size:13px}
+.filters{display:flex;gap:7px;flex-wrap:wrap}.filter{padding:7px 11px;border-radius:10px;background:#f4f4f9;color:var(--muted);font-size:12px;font-weight:700}.filter.active{background:#eeecff;color:var(--accent)}
+.task-list{display:flex;flex-direction:column;gap:9px}.task{display:flex;gap:12px;align-items:center;padding:13px;border:1px solid var(--line);border-radius:13px;background:#fff}
+.check{width:21px;height:21px;accent-color:var(--accent);flex:none}.task-main{min-width:0;flex:1}.task-title{font-weight:650;overflow-wrap:anywhere}.task.done .task-title{text-decoration:line-through;color:#a1a3b2}.task-meta{font-size:12px;color:var(--muted);display:flex;gap:8px;flex-wrap:wrap}
+.dot{width:8px;height:8px;border-radius:50%;display:inline-block;margin-right:5px}.task-actions{display:flex;gap:5px}.icon-btn{background:transparent;color:#989bad;padding:5px;font-size:16px}.empty{text-align:center;color:var(--muted);padding:30px 10px}
+.side-stack{display:flex;flex-direction:column;gap:18px}.progress{height:9px;border-radius:20px;background:#f0eff7;overflow:hidden;margin:12px 0 8px}.progress>div{height:100%;background:linear-gradient(90deg,#6757e8,#a58df9);border-radius:20px;transition:width .2s}
+.focus{background:linear-gradient(145deg,#6757e8,#8976f0);color:#fff;border:0}.focus .muted{color:#e1dcff}.focus .panel-head{margin-bottom:8px}.focus-number{font-size:36px;font-weight:800;letter-spacing:-1px}.focus p{margin:0 0 14px;color:#e1dcff;font-size:13px}.focus .btn{background:#fff;color:var(--accent)}
+.note{width:100%;min-height:120px;border:1px solid var(--line);border-radius:12px;padding:12px;resize:vertical;color:var(--ink);outline-color:var(--accent)}
+.modal-backdrop{position:fixed;inset:0;background:#16172c66;display:none;align-items:center;justify-content:center;padding:18px;z-index:5}.modal-backdrop.show{display:flex}.modal{background:white;border-radius:20px;padding:22px;width:min(440px,100%);box-shadow:0 20px 60px #0003}.modal h2{margin:0 0 17px}.field{display:flex;flex-direction:column;gap:6px;margin:12px 0}.field label{font-size:12px;font-weight:700;color:var(--muted)}.field input,.field select{padding:11px;border:1px solid var(--line);border-radius:10px;outline-color:var(--accent)}.modal-actions{display:flex;justify-content:flex-end;gap:8px;margin-top:18px}
+@media(max-width:760px){.layout{grid-template-columns:1fr}.stats{gap:8px}.stat{padding:13px}.stat strong{font-size:23px}.app{padding:20px 14px 40px}header{align-items:flex-start}.top-actions .btn{padding:9px 11px}}
+</style>
+</head>
+<body>
+<div class="app">
+<header>
+  <div><div class="brand"><div class="logo">✦</div> daylight</div><div class="date" id="todayLabel"></div></div>
+  <div class="top-actions"><button class="btn" id="todayBtn">Today</button><button class="btn primary" id="addTop">＋ Add task</button></div>
+</header>
+<section class="greeting"><h1>Make today count.</h1><p>A little progress every day adds up to big results.</p></section>
+<section class="stats">
+  <div class="stat"><span>Tasks today</span><strong id="totalStat">0</strong></div>
+  <div class="stat"><span>Completed</span><strong id="doneStat">0</strong></div>
+  <div class="stat"><span>Completion</span><strong id="percentStat">0%</strong></div>
+</section>
+<div class="layout">
+  <main class="panel">
+    <div class="panel-head"><div><h2>Your schedule</h2><div class="muted" id="listDate"></div></div></div>
+    <div class="panel-head"><div class="filters" id="filters">
+      <button class="filter active" data-filter="all">All</button><button class="filter" data-filter="active">To do</button><button class="filter" data-filter="done">Done</button>
+    </div><span class="muted" id="taskCount"></span></div>
+    <div class="task-list" id="taskList"></div>
+  </main>
+  <aside class="side-stack">
+    <section class="panel"><div class="panel-head"><h2>Daily progress</h2><span id="progressText" class="muted">0%</span></div><div class="progress"><div id="progressBar" style="width:0%"></div></div><div class="muted" id="progressHint">Add a task to get started.</div></section>
+    <section class="panel focus"><div class="panel-head"><h2>Focus moment</h2><span>◷</span></div><div class="focus-number" id="timer">25:00</div><p>One task. One step. Give it your full attention.</p><button class="btn" id="timerBtn">Start focus</button></section>
+    <section class="panel"><div class="panel-head"><h2>Quick notes</h2><span class="muted">Auto-saved</span></div><textarea class="note" id="notes" placeholder="Ideas, reminders, or things to remember..."></textarea></section>
+  </aside>
+</div>
+</div>
+<div class="modal-backdrop" id="modal">
+ <form class="modal" id="taskForm">
+  <h2 id="modalTitle">Add a task</h2>
+  <div class="field"><label for="taskName">TASK</label><input id="taskName" maxlength="100" placeholder="e.g. Review lecture notes" required></div>
+  <div class="field"><label for="taskTime">TIME</label><input id="taskTime" type="time"></div>
+  <div class="field"><label for="taskCategory">CATEGORY</label><select id="taskCategory"><option>Personal</option><option>Study</option><option>Work</option><option>Health</option></select></div>
+  <div class="modal-actions"><button type="button" class="btn" id="cancelBtn">Cancel</button><button class="btn primary" type="submit">Save task</button></div>
+ </form>
+</div>
+<script>
+const $=id=>document.getElementById(id);
+const key='daylight-planner-v1';
+let tasks=JSON.parse(localStorage.getItem(key)||'[]'), filter='all', editing=null, seconds=1500, timerId=null;
+const today=new Date().toISOString().slice(0,10);
+$('todayLabel').textContent=new Date().toLocaleDateString(undefined,{weekday:'long',month:'long',day:'numeric',year:'numeric'});
+$('listDate').textContent='Your plan for today';
+function save(){localStorage.setItem(key,JSON.stringify(tasks));render()}
+function render(){
+ const todays=tasks.filter(t=>t.date===today), done=todays.filter(t=>t.done).length, pct=todays.length?Math.round(done/todays.length*100):0;
+ $('totalStat').textContent=todays.length;$('doneStat').textContent=done;$('percentStat').textContent=pct+'%';
+ $('progressText').textContent=pct+'%';$('progressBar').style.width=pct+'%';
+ $('progressHint').textContent=!todays.length?'Add a task to get started.':pct===100?'Amazing work — you completed everything!':`${todays.length-done} task${todays.length-done===1?'':'s'} left. Keep going!`;
+ let shown=todays.filter(t=>filter==='all'||(filter==='done'?t.done:!t.done)).sort((a,b)=>(a.time||'99:99').localeCompare(b.time||'99:99'));
+ $('taskCount').textContent=shown.length+' shown';
+ $('taskList').innerHTML=shown.length?shown.map(t=>`<div class="task ${t.done?'done':''}">
+ <input class="check" type="checkbox" aria-label="Complete ${escapeHtml(t.name)}" ${t.done?'checked':''} data-check="${t.id}">
+ <div class="task-main"><div class="task-title">${escapeHtml(t.name)}</div><div class="task-meta">${t.time?`<span>◷ ${t.time}</span>`:''}<span><i class="dot" style="background:${color(t.category)}"></i>${escapeHtml(t.category)}</span></div></div>
+ <div class="task-actions"><button class="icon-btn" title="Edit" data-edit="${t.id}">✎</button><button class="icon-btn" title="Delete" data-delete="${t.id}">×</button></div></div>`).join(''):'<div class="empty">Nothing here yet. Add a task and make a plan ✨</div>';
+ document.querySelectorAll('[data-check]').forEach(el=>el.onchange=()=>{let t=tasks.find(x=>x.id===el.dataset.check);t.done=el.checked;save()});
+ document.querySelectorAll('[data-delete]').forEach(el=>el.onclick=()=>{tasks=tasks.filter(x=>x.id!==el.dataset.delete);save()});
+ document.querySelectorAll('[data-edit]').forEach(el=>el.onclick=()=>openModal(el.dataset.edit));
+}
+function color(c){return ({Study:'#6757e8',Work:'#e79a38',Health:'#159b75',Personal:'#e16b91'})[c]||'#999'}
+function escapeHtml(s){return String(s).replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]))}
+function openModal(id=null){editing=id;let t=tasks.find(x=>x.id===id);$('modalTitle').textContent=t?'Edit task':'Add a task';$('taskName').value=t?.name||'';$('taskTime').value=t?.time||'';$('taskCategory').value=t?.category||'Personal';$('modal').classList.add('show');$('taskName').focus()}
+function closeModal(){$('modal').classList.remove('show');editing=null}
+$('addTop').onclick=()=>openModal();$('cancelBtn').onclick=closeModal;$('todayBtn').onclick=()=>{filter='all';setFilter();render()};
+$('taskForm').onsubmit=e=>{e.preventDefault();let old=tasks.find(x=>x.id===editing);let item={id:editing||crypto.randomUUID(),name:$('taskName').value.trim(),time:$('taskTime').value,category:$('taskCategory').value,date:today,done:old?.done||false};if(!item.name)return;if(old)Object.assign(old,item);else tasks.push(item);closeModal();save()};
+$('modal').onclick=e=>{if(e.target===$('modal'))closeModal()};
+function setFilter(){document.querySelectorAll('.filter').forEach(b=>b.classList.toggle('active',b.dataset.filter===filter))}
+$('filters').onclick=e=>{let b=e.target.closest('[data-filter]');if(!b)return;filter=b.dataset.filter;setFilter();render()};
+$('notes').value=localStorage.getItem('daylight-notes')||'';$('notes').oninput=()=>localStorage.setItem('daylight-notes',$('notes').value);
+function showTimer(){$('timer').textContent=String(Math.floor(seconds/60)).padStart(2,'0')+':'+String(seconds%60).padStart(2,'0')}
+$('timerBtn').onclick=()=>{if(timerId){clearInterval(timerId);timerId=null;$('timerBtn').textContent='Resume focus'}else{if(seconds===0)seconds=1500;timerId=setInterval(()=>{seconds--;showTimer();if(seconds<=0){clearInterval(timerId);timerId=null;$('timerBtn').textContent='Start again';alert('Focus session complete. Great work!')}},1000);$('timerBtn').textContent='Pause'}};
+render();showTimer();
+</script>
+</body></html>
